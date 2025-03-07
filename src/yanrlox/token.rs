@@ -29,11 +29,17 @@ pub enum TokenValue {
 }
 
 pub struct Token {
-    pub val: TokenValue,
     pub token_type: TokenType,
+    pub val: Option<TokenValue>,
     pub line: usize,
     pub column: usize,
     length: usize
+}
+
+impl Token {
+    pub fn add_type(t: TokenType, line: usize, column: usize, length: usize) -> Self {
+        Token{token_type: t, val: None, line: line, column: column, length: length}
+    }
 }
 
 impl fmt::Debug for Token {

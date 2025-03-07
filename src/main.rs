@@ -23,7 +23,8 @@ fn main() {
 
 fn run(input: &str) -> Result<(), Error> {
     println!("NOW RUNNING\n\n|{}|", input);
-    let tokens = match scanner::scan_tokens(&input) {
+    let mut scan = scanner::Scanner::new(input);
+    let tokens = match scan.scan_tokens() {
         Ok(val) => val,
         Err(error) => return Err(error)
 

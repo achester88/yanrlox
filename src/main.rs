@@ -22,7 +22,7 @@ fn main() {
 }
 
 fn run(input: &str) -> Result<(), Error> {
-    println!("NOW RUNNING\n\n|{}|", input);
+    println!("NOW RUNNING\n\n------\n{}\n-------", input);
     let mut scan = scanner::Scanner::new(input);
     let tokens = match scan.scan_tokens() {
         Ok(val) => val,

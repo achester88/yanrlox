@@ -29,12 +29,10 @@ impl Scanner {
         
         while !self.at_end() {
             self.start = self.current;
-            println!("tokens: {:?}", self.tokens);
             match self.scan_token() {
                 Ok(()) => {},
                 Err(e) => return Err(e)
             }
-            println!("tokens: {:?}", self.tokens);
         }
 
         self.push(TokenType::Eof);
@@ -44,7 +42,6 @@ impl Scanner {
 
     pub fn scan_token(&mut self) -> Result<(), Error> {
         let c = self.advance();
-        println!("st |{}|", c);
         match c {
             '(' => self.push(TokenType::LeftParen),
             ')' => self.push(TokenType::RightParen),
@@ -72,7 +69,6 @@ impl Scanner {
                         }
                         self.advance(); 
                     }
-                    println!("over at {}", self.at_end());
                 } else {
                     self.push(TokenType::Slash);
                 }
@@ -88,15 +84,78 @@ impl Scanner {
             '\"' => match self.string() {
                 Ok(()) => {},
                 Err(e) => return Err(e)
+            },
+            
+            _ => {
+                if c.is_digit(10) {
+                    self.number();
+                } else if c.is_alphabetic() || c == '_' {
+                    self.identifier();
+                } else {
+                return Err(Error::pos_error(&format!("Unexpected character: |{}|", c), self.line, self.column, "A charater not in the standard definition of lox has be detected"));
+                }
             }
-
-
-            _ => return Err(Error::pos_error(&format!("Unexpected character: |{}|", c), self.line, self.column, "A charater not in the standard definition of lox has be detected"))
 
         };
 
         Ok(())
     }
+
+    fn identifier(&mut self) {
+        while self.peek().is_alphanumeric() || self.peek() == '_' {
+            self.advance();
+        }
+
+        let val: String = (self.stream[self.start..self.current]).iter().collect();
+
+        let token_type = match val.as_ref() {
+            "and" => TokenType::And,
+            "class" => TokenType::Class,
+            "else" => TokenType::Else,
+            "false" => TokenType::False,
+            "fun" => TokenType::Fun,
+            "for" => TokenType::For,
+            "if" => TokenType::If,
+            "nil" => TokenType::Nil,
+            "or" => TokenType::Or,
+            "or" => TokenType::Print, 
+            "return" => TokenType::Return,
+            "super" => TokenType::Super, 
+            "ths" => TokenType::This, 
+            "true" => TokenType::True, 
+            "var" => TokenType::Var, 
+            "while" => TokenType::While,
+
+            _ => TokenType::Identifier
+        };
+
+        if token_type == TokenType::Identifier {
+            self.tokens.push(Token::add_val(token_type, TokenValue::Name(val),
+            self.line, self.column, self.current-self.start));
+        } else {
+            self.push(token_type);
+        }
+    }
+
+    fn number(&mut self) {
+        while self.peek().is_digit(10) {
+            self.advance();
+        }
+        
+        let next = self.current + 1;
+        if (self.peek() == '.' && next < self.stream.len() && self.stream[next].is_digit(10)) {
+            self.advance(); //.
+            
+            while self.peek().is_digit(10) {
+                self.advance();
+            }
+        }
+
+        let val: String = (self.stream[self.start..self.current]).iter().collect();
+
+        self.tokens.push(Token::add_val(TokenType::Number, TokenValue::Number(val.parse::<f64>().unwrap()), 
+        self.line, self.column, self.current-self.start));
+    } 
 
     fn string(&mut self) -> Result<(), Error> {
         while self.peek() != '\"' && !self.at_end() {

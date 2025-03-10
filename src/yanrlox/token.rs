@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum TokenType {
   LeftParen, RightParen, LeftBrace, RightBrace,
   Comma, Dot, Minus, Plus, Semicolon, Slash, Star,
@@ -23,9 +23,9 @@ pub enum TokenType {
 
 #[derive(Debug, Clone)]
 pub enum TokenValue {
-    Bool(bool),
     String(String),
-    Number(f64)
+    Number(f64),
+    Name(String)
 }
 
 #[derive(Clone)]
@@ -52,6 +52,7 @@ impl fmt::Debug for Token {
         match &self.token_type {
             TokenType::Number => write!(f, "[Number: {:?}]", &self.val.clone().unwrap()),
             TokenType::String => write!(f, "[String: {:?}]", &self.val.clone().unwrap()),
+            TokenType::Identifier => write!(f, "[Identifier: {:?}]", &self.val.clone().unwrap()),
             _ => write!(f, "[{:?}]", &self.token_type)
         }
         //write!(f, "Token")

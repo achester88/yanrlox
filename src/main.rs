@@ -7,9 +7,13 @@ mod yanrlox;
 use crate::yanrlox::scanner;
 use crate::yanrlox::error::*;
 
+use crate::yanrlox::chunk::{Opcode, Chunk};
+use crate::yanrlox::debug;
+
 fn main() {
     let args: Vec<String> = env::args().collect();
 
+    /*
     if args.len() > 2 {
         println!("USAGE: yanrlox [source]");
         exit(64);
@@ -18,7 +22,14 @@ fn main() {
     } else {
         run_prompt();
     }
+    */
     
+    let mut chunk = Chunk::new();
+    let id = chunk.add_constant(1.2);
+    chunk.code.push(Opcode::Constant as i16);
+    chunk.code.push(id as i16);
+
+    debug::disassembleChunk(&chunk);
 }
 
 fn run(input: &str) -> Result<(), Error> {

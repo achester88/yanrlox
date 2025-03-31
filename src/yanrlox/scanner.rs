@@ -220,3 +220,4 @@ impl Scanner {
         self.current >= self.stream.len()
     }
 }
+

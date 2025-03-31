@@ -1,12 +1,24 @@
 use crate::yanrlox::chunk::{Chunk, Opcode};
 
 pub fn disassembleChunk(chunk: &Chunk) {
-    println!("#### START ####");
-    for (op, i) in chunk.code.into_iter() {
+    println!("#### DEBUG START ####");
+    let mut i = 0;
+    while i < chunk.code.len() {
+        let op = chunk.code[i];
+        print!("[{}] ", i);
         match op {
-            _ => println!("{}. {}", i, op)
+            0 => print!("Return"),
+            1 => { //Constant
+                i += 1;
+                print!("Constant; [{}] {}(at {})", i, chunk.constants[chunk.code[i] as usize], chunk.code[i]);
+            }
+            _ => print!("{}. {}", i, op)
         };
+
+        println!("");
+        i += 1;
     }
+    println!("#### DEBUG  END  ####");
 }
 
 

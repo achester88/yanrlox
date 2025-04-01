@@ -7,10 +7,10 @@ pub fn disassembleChunk(chunk: &Chunk) {
         let op = chunk.code[i];
         print!("[{}] ", i);
         match op {
-            0 => print!("Return"),
+            0 => print!("Return<{}>", chunk.get_line(i)+1),
             1 => { //Constant
                 i += 1;
-                print!("Constant; [{}] {}(at {})", i, chunk.constants[chunk.code[i] as usize], chunk.code[i]);
+                print!("Constant<{}>; [{}] {}(@{})", chunk.get_line(i)+1, i, chunk.constants[chunk.code[i] as usize], chunk.code[i]);
             }
             _ => print!("{}. {}", i, op)
         };

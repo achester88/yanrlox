@@ -26,9 +26,9 @@ fn main() {
     
     let mut chunk = Chunk::new();
     let id = chunk.add_constant(1.2);
-    chunk.push_op(Opcode::Constant);
-    chunk.code.push(id as i16);
-    chunk.push_op(Opcode::Return);
+    chunk.push_op(Opcode::Constant, 0);
+    chunk.push_i16(id, 0);
+    chunk.push_op(Opcode::Return, 0);
 
     debug::disassembleChunk(&chunk);
 }

@@ -9,9 +9,10 @@ use crate::yanrlox::error::*;
 
 use crate::yanrlox::chunk::{Opcode, Chunk};
 use crate::yanrlox::debug;
+use crate::yanrlox::vm;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let _args: Vec<String> = env::args().collect();
 
     /*
     if args.len() > 2 {
@@ -25,12 +26,30 @@ fn main() {
     */
     
     let mut chunk = Chunk::new();
-    let id = chunk.add_constant(1.2);
+
+    let mut id = chunk.add_constant(1.2);
     chunk.push_op(Opcode::Constant, 0);
-    chunk.push_i16(id, 0);
+    chunk.push_u8(id, 0);
+
+    let mut id = chunk.add_constant(3.4);
+    chunk.push_op(Opcode::Constant, 0);
+    chunk.push_u8(id, 0);
+
+    chunk.push_op(Opcode::Add, 0);
+
+    let mut id = chunk.add_constant(5.6);
+    chunk.push_op(Opcode::Constant, 0);
+    chunk.push_u8(id, 0);
+
+    chunk.push_op(Opcode::Divide, 0);
+    chunk.push_op(Opcode::Negate, 0);
+
     chunk.push_op(Opcode::Return, 0);
 
     debug::disassembleChunk(&chunk);
+
+    let mut new_vm = vm::Vm::new(chunk, true); //Disable Debug in release + setup proper flag
+    new_vm.run();
 }
 
 fn run(input: &str) -> Result<(), Error> {

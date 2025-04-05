@@ -118,7 +118,7 @@ impl Scanner {
             "if" => TokenType::If,
             "nil" => TokenType::Nil,
             "or" => TokenType::Or,
-            "or" => TokenType::Print, 
+            "print" => TokenType::Print, 
             "return" => TokenType::Return,
             "super" => TokenType::Super, 
             "ths" => TokenType::This, 
@@ -143,7 +143,7 @@ impl Scanner {
         }
         
         let next = self.current + 1;
-        if (self.peek() == '.' && next < self.stream.len() && self.stream[next].is_digit(10)) {
+        if self.peek() == '.' && next < self.stream.len() && self.stream[next].is_digit(10) {
             self.advance(); //.
             
             while self.peek().is_digit(10) {

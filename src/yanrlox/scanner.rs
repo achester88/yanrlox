@@ -25,7 +25,7 @@ impl Scanner {
         }
     }
 
-    pub fn scan_tokens(&mut self) -> Result<Vec<Token>, Error> {
+    /*pub fn scan_tokens(&mut self) -> Result<Vec<Token>, Error> {
         
         while !self.at_end() {
             self.start = self.current;
@@ -38,21 +38,24 @@ impl Scanner {
         self.push(TokenType::Eof);
 
         Ok(self.tokens.clone())
-    }
+    }*/
 
-    pub fn scan_token(&mut self) -> Result<(), Error> {
+    pub fn scan_token(&mut self) -> Result<Token, Error> {
+        if self.at_end() {
+            return Ok(self.create(TokenType::Eof))
+        }
         let c = self.advance();
-        match c {
-            '(' => self.push(TokenType::LeftParen),
-            ')' => self.push(TokenType::RightParen),
-            '{' => self.push(TokenType::LeftBrace),
-            '}' => self.push(TokenType::RightBrace),
-            ',' => self.push(TokenType::Comma),
-            '.' => self.push(TokenType::Dot),
-            '-' => self.push(TokenType::Minus),
-            '+' => self.push(TokenType::Plus),
-            ';' => self.push(TokenType::Semicolon),
-            '*' => self.push(TokenType::Star),
+        let next_token = match c {
+            '(' => self.create(TokenType::LeftParen),
+            ')' => self.create(TokenType::RightParen),
+            '{' => self.create(TokenType::LeftBrace),
+            '}' => self.create(TokenType::RightBrace),
+            ',' => self.create(TokenType::Comma),
+            '.' => self.create(TokenType::Dot),
+            '-' => self.create(TokenType::Minus),
+            '+' => self.create(TokenType::Plus),
+            ';' => self.create(TokenType::Semicolon),
+            '*' => self.create(TokenType::Star),
 
             '!' => self.check_combo('=', TokenType::Bang, TokenType::BangEqual),
             '=' => self.check_combo('=', TokenType::Equal, TokenType::EqualEqual),
@@ -67,30 +70,63 @@ impl Scanner {
                             self.line += 1;
                             break;
                         }
-                        self.advance(); 
+                        self.advance();
+                    }
+
+                    self.start = self.current;
+                    match self.scan_token() {
+                        Ok(t) => t,
+                        Err(e) => return Err(e)
                     }
                 } else {
-                    self.push(TokenType::Slash);
+                     self.create(TokenType::Slash)
                 }
             }
 
-            ' ' => self.column += 1,
+            ' ' => {
+                self.column += 1;
+
+                self.start = self.current;
+                match self.scan_token() {
+                    Ok(t) => t,
+                    Err(e) => return Err(e)
+                }
+            },
             '\n' => {
                 self.column = 1;
                 self.line += 1;
+
+                self.start = self.current;
+                match self.scan_token() {
+                    Ok(t) => t,
+                    Err(e) => return Err(e)
+                }
             },
-            '\r' | '\t' => {},
+            '\r' | '\t' => {
+                self.start = self.current;
+                match self.scan_token() {
+                    Ok(t) => t,
+                    Err(e) => return Err(e)
+                }
+            },
 
             '\"' => match self.string() {
-                Ok(()) => {},
+                Ok(()) => {
+                    self.start = self.current;
+                    match self.scan_token() {
+                        Ok(t) => t,
+                        Err(e) => return Err(e)
+                    }
+                }
+                ,
                 Err(e) => return Err(e)
             },
             
             _ => {
                 if c.is_digit(10) {
-                    self.number();
+                    self.number()
                 } else if c.is_alphabetic() || c == '_' {
-                    self.identifier();
+                    self.identifier()
                 } else {
                 return Err(Error::pos_error(&format!("Unexpected character: |{}|", c), self.line, self.column, "A charater not in the standard definition of lox has be detected"));
                 }
@@ -98,10 +134,12 @@ impl Scanner {
 
         };
 
-        Ok(())
+        self.start = self.current;
+        Ok(next_token)
+
     }
 
-    fn identifier(&mut self) {
+    fn identifier(&mut self) -> Token {
         while self.peek().is_alphanumeric() || self.peek() == '_' {
             self.advance();
         }
@@ -130,14 +168,14 @@ impl Scanner {
         };
 
         if token_type == TokenType::Identifier {
-            self.tokens.push(Token::add_val(token_type, TokenValue::Name(val),
+            return (Token::add_val(token_type, TokenValue::Name(val),
             self.line, self.column, self.current-self.start));
         } else {
-            self.push(token_type);
+            return self.create(token_type);
         }
     }
 
-    fn number(&mut self) {
+    fn number(&mut self) -> Token {
         while self.peek().is_digit(10) {
             self.advance();
         }
@@ -152,8 +190,7 @@ impl Scanner {
         }
 
         let val: String = (self.stream[self.start..self.current]).iter().collect();
-
-        self.tokens.push(Token::add_val(TokenType::Number, TokenValue::Number(val.parse::<f64>().unwrap()), 
+        return (Token::add_val(TokenType::Number, TokenValue::Number(val.parse::<f64>().unwrap()), 
         self.line, self.column, self.current-self.start));
     } 
 
@@ -180,8 +217,8 @@ impl Scanner {
         Ok(())
     }
 
-    fn push(&mut self, t: TokenType) {
-        self.tokens.push(Token::add_type(t, self.line, self.column, self.current-self.start));
+    fn create(&mut self, t: TokenType) -> Token {
+        Token::add_type(t, self.line, self.column, self.current-self.start)
     }
 
     fn advance(&mut self) -> char {
@@ -199,11 +236,11 @@ impl Scanner {
         }
     }
 
-    fn check_combo(&mut self, c: char, one: TokenType, two: TokenType) {
+    fn check_combo(&mut self, c: char, one: TokenType, two: TokenType) -> Token {
         if self.match_next(c) {
-            self.push(two);
+            return self.create(two)
         } else {
-            self.push(one);
+            return self.create(one)
         }
     }
 
@@ -218,6 +255,10 @@ impl Scanner {
 
     fn at_end(&self) -> bool {
         self.current >= self.stream.len()
+    }
+
+    pub fn scan_next_token(&mut self) -> Result<Token, Error> {
+        return self.scan_token()
     }
 }
 

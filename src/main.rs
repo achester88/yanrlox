@@ -2,9 +2,11 @@ use std::env;
 use std::io;
 use std::process::exit;
 use std::io::Write;
+use std::env::args;
 
 mod yanrlox;
 use crate::yanrlox::scanner;
+use crate::yanrlox::compiler::compile;
 use crate::yanrlox::error::*;
 
 use crate::yanrlox::chunk::{Opcode, Chunk};
@@ -12,9 +14,9 @@ use crate::yanrlox::debug;
 use crate::yanrlox::vm;
 
 fn main() {
-    let _args: Vec<String> = env::args().collect();
+    let args: Vec<String> = env::args().collect();
 
-    /*
+    
     if args.len() > 2 {
         println!("USAGE: yanrlox [source]");
         exit(64);
@@ -23,45 +25,12 @@ fn main() {
     } else {
         run_prompt();
     }
-    */
-    
-    let mut chunk = Chunk::new();
 
-    let mut id = chunk.add_constant(1.2);
-    chunk.push_op(Opcode::Constant, 0);
-    chunk.push_u8(id, 0);
-
-    let mut id = chunk.add_constant(3.4);
-    chunk.push_op(Opcode::Constant, 0);
-    chunk.push_u8(id, 0);
-
-    chunk.push_op(Opcode::Add, 0);
-
-    let mut id = chunk.add_constant(5.6);
-    chunk.push_op(Opcode::Constant, 0);
-    chunk.push_u8(id, 0);
-
-    chunk.push_op(Opcode::Divide, 0);
-    chunk.push_op(Opcode::Negate, 0);
-
-    chunk.push_op(Opcode::Return, 0);
-
-    debug::disassembleChunk(&chunk);
-
-    let mut new_vm = vm::Vm::new(chunk, true); //Disable Debug in release + setup proper flag
-    new_vm.run();
 }
 
-fn run(input: &str) -> Result<(), Error> {
-    println!("NOW RUNNING\n\n------\n{}\n-------", input);
-    let mut scan = scanner::Scanner::new(input);
-    let tokens = match scan.scan_tokens() {
-        Ok(val) => val,
-        Err(error) => return Err(error)
+fn interpret(source: &str) -> Result<(), Error> {
+    compile(source);
 
-    };
-
-    println!("|START|\n{:?}\n|END|", tokens);
     Ok(())
 }
 
@@ -74,7 +43,7 @@ fn run_program(location: &String) {
             exit(1);
         }
     }
-    match run(&source) {
+    match interpret(&source) {
         Ok(()) => exit(0),
         Err(error) => {
             throw_error(source, error);
@@ -93,7 +62,7 @@ fn run_prompt() {
         if &input == "exit\n" {
             exit(0);
         } else {
-            match run(&input) {
+            match interpret(&input) {
                 Err(error) => throw_error(input, error),
                 _ => {}
             }

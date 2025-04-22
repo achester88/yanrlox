@@ -1,5 +1,7 @@
 use crate::yanrlox::chunk::{Chunk, Value};
 
+use crate::yanrlox::error::*;
+
 #[macro_export]
 macro_rules! binaryop {
     ( $stack:expr, $code:expr, $op:tt ) => {
@@ -35,7 +37,8 @@ impl Vm {
         }
     }
 
-    pub fn run(&mut self) -> InterpretResult {
+
+    pub fn run(&mut self) -> Result<(), Error> {
 
         loop {
             let current = self.chunk.code[self.ip];
@@ -52,7 +55,7 @@ impl Vm {
             match current {
                 0x00 => return {
                     println!("{}", self.stack.pop().unwrap_or(0.0));
-                    InterpretResult::InterpretOk
+                    Ok(())
                 },
                 0x01 => {
                     let val = self.read_costant();

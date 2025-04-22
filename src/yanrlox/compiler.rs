@@ -1,40 +1,50 @@
+use std::iter::Scan;
+
 use crate::yanrlox::scanner::Scanner;
 use crate::yanrlox::error::*;
 use crate::yanrlox::token::TokenType;
+use crate::yanrlox::chunk::Chunk;
+use crate::yanrlox::token::Token;
 
-pub fn compile(source: &str) -> Result<(), Error> {
-    println!("NOW RUNNING\n\n------\n{}\n-------", source);
-    let mut scan = Scanner::new(source);
+use super::{scanner, token};
 
-    let mut line = 0;
+pub struct Compiler {
+    current: Token,
+    previous: Token,
+    scanner: Scanner
+}
 
-    loop {
-        let token = match scan.scan_next_token() {
-            Ok(t) => t,
-            Err(e) => return Err(e)
-        };
+impl Compiler {
 
-        if token.line != line {
-            print!("{} ", token.line);
-            line = token.line;
-        } else {
-            print!("| ");
+    pub fn new(source: &str) -> Self {
+        Compiler { 
+            current: Token::empty(),
+            previous: Token::empty(),
+            scanner: Scanner::new(source) 
         }
-
-        println!("{:?} {:?}", token.token_type, token.val);
-
-        if token.token_type == TokenType::Eof { break }
     }
 
-    /*
-    let tokens = match scan.scan_tokens() {
-        Ok(val) => val,
-        Err(error) => return Err(error)
+    pub fn compile(&mut self) -> Result<Chunk, Error> {
+        let chunk = Chunk::new();
+        
 
+        self.advance();
+        //self.expression();
+        //self.consume(TokenType::Eof, "Expect end of expression");
+        
+
+        Ok(chunk)
+}
+
+ fn advance(&mut self) -> Result<(), Error> {
+    self.previous = self.current.clone();
+
+    self.current = match self.scanner.scan_token() {
+        Ok(t) => t,
+        Err(e) => return Err(e)
     };
-    */
-
-    //println!("|START|\n{:?}\n|END|", tokens);
 
     Ok(())
+ }
+
 }

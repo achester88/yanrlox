@@ -5,8 +5,10 @@ use std::io::Write;
 use std::env::args;
 
 mod yanrlox;
+use yanrlox::compiler::Compiler;
+use yanrlox::vm::InterpretResult;
+
 use crate::yanrlox::scanner;
-use crate::yanrlox::compiler::compile;
 use crate::yanrlox::error::*;
 
 use crate::yanrlox::chunk::{Opcode, Chunk};
@@ -28,10 +30,19 @@ fn main() {
 
 }
 
-fn interpret(source: &str) -> Result<(), Error> {
-    compile(source);
+pub fn interpret(source: &str) -> Result<(), Error> {
+    let chunk: Chunk;
 
-    Ok(())
+    let mut comp = Compiler::new(source);
+
+    match comp.compile() {
+        Ok(c) => chunk = c,
+        Err(e) => return Err(e)
+    }
+
+    let mut virm = vm::Vm::new(chunk, true);
+
+    return virm.run();
 }
 
 fn run_program(location: &String) {
@@ -43,6 +54,7 @@ fn run_program(location: &String) {
             exit(1);
         }
     }
+
     match interpret(&source) {
         Ok(()) => exit(0),
         Err(error) => {

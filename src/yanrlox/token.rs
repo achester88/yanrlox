@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Copy)]
 pub enum TokenType {
   LeftParen, RightParen, LeftBrace, RightBrace,
   Comma, Dot, Minus, Plus, Semicolon, Slash, Star,
@@ -18,7 +18,7 @@ pub enum TokenType {
   And, Class, Else, False, Fun, For, If, Nil, Or,
   Print, Return, Super, This, True, Var, While,
 
-  Eof, Error
+  Eof, Error, Empty
 }
 
 #[derive(Debug, Clone)]
@@ -44,6 +44,10 @@ impl Token {
 
     pub fn add_val(t: TokenType, val: TokenValue, line: usize, column: usize, length: usize) -> Self {
         Token{token_type: t, val: Some(val), line: line, column: column, length: length}
+    }
+
+    pub fn empty() -> Self {
+        Token{token_type: TokenType::Empty, val: None, line: 0, column: 0, length: 0}
     }
 }
 

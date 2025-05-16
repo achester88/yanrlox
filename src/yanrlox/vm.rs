@@ -43,11 +43,12 @@ impl Vm {
         loop {
             let current = self.chunk.code[self.ip];
 
-            //#[cfg(feature = "complex")] 
-            //{
+            #[cfg(feature = "complex")] 
+            {
                 if self.debug {
                 println!("      {:?}", self.stack);
                 println!("-- {:#04x?}", current);
+                }
             }
 
             self.ip += 1;

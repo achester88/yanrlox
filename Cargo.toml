@@ -3,4 +3,9 @@ name = "yanrlox"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+debug-print-code = []
+debug_trace_execution = []
+
+debug = ["debug-print-code", "debug_trace_execution"]
 [dependencies]

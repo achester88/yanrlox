@@ -11,6 +11,7 @@ pub enum Opcode {
 
 pub type Value = f32;
 
+#[derive(Debug, Clone)]
 pub struct Chunk {
     pub code: Vec<u8>,
     pub constants: Vec<Value>,

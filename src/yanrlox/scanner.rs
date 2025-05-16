@@ -3,6 +3,7 @@ use crate::yanrlox::error::Error;
 use crate::yanrlox::token::TokenType;
 use crate::yanrlox::token::TokenValue;
 
+#[derive(Debug)]
 pub struct Scanner {
     stream: Vec<char>,
     tokens: Vec<Token>,
@@ -24,21 +25,6 @@ impl Scanner {
             column: 1
         }
     }
-
-    /*pub fn scan_tokens(&mut self) -> Result<Vec<Token>, Error> {
-        
-        while !self.at_end() {
-            self.start = self.current;
-            match self.scan_token() {
-                Ok(()) => {},
-                Err(e) => return Err(e)
-            }
-        }
-
-        self.push(TokenType::Eof);
-
-        Ok(self.tokens.clone())
-    }*/
 
     pub fn scan_token(&mut self) -> Result<Token, Error> {
         if self.at_end() {
@@ -190,7 +176,7 @@ impl Scanner {
         }
 
         let val: String = (self.stream[self.start..self.current]).iter().collect();
-        return (Token::add_val(TokenType::Number, TokenValue::Number(val.parse::<f64>().unwrap()), 
+        return (Token::add_val(TokenType::Number, TokenValue::Number(val.parse::<f32>().unwrap()), 
         self.line, self.column, self.current-self.start));
     } 
 

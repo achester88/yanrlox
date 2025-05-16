@@ -24,7 +24,7 @@ pub enum TokenType {
 #[derive(Debug, Clone)]
 pub enum TokenValue {
     String(String),
-    Number(f64),
+    Number(f32),
     Name(String)
 }
 
